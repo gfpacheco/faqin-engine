@@ -9,8 +9,8 @@ fuckin.Vector.prototype.dot = function(vector) {
 
 fuckin.Vector.prototype.add = function(vector, self) {
     if (self) {
-        thix.x += vector.x;
-        thix.y += vector.y;
+        this.x += vector.x;
+        this.y += vector.y;
         return this;
     } else {
         return new fuckin.Vector(this.x + vector.y, this.y + vector.y);
@@ -19,8 +19,8 @@ fuckin.Vector.prototype.add = function(vector, self) {
 
 fuckin.Vector.prototype.sub = function(vector, self) {
     if (self) {
-        thix.x -= vector.x;
-        thix.y -= vector.y;
+        this.x -= vector.x;
+        this.y -= vector.y;
         return this;
     } else {
         return new fuckin.Vector(this.x - vector.y, this.y - vector.y);

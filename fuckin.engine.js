@@ -3,6 +3,12 @@ fuckin.Engine = function(options) {
     this.defaultGravity = options.defaultGravity || 10 / this.fps;
     this.canvas = options.canvas;
     this.canvasContext = this.canvas.getContext('2d');
+    this.viewport = options.viewport || new fuckin.Rect({
+        x: 0,
+        y: 0,
+        width: this.canvas.width,
+        height: this.canvas.height
+    });
     this.debug = options.debug;
 
     this.solids = [];
@@ -51,11 +57,23 @@ fuckin.Engine = function(options) {
     this.handleCollision = function(solid1, solid2) {
         if (solid1 instanceof fuckin.Rect) {
             if (solid2 instanceof fuckin.Rect) {
-                if (true) {
-                    this.resolveCollision(solid1, solid2, new fuckin.Vector(1, 1));
+                if (this.checkRectVsRect(solid1, solid2)) {
+                    solid1.dispatchEvent(new Event('collide', {
+                        solid: solid2
+                    }));
+                    solid2.dispatchEvent(new Event('collide', {
+                        solid: solid1
+                    }));
                 }
             }
         }
+    };
+
+    this.checkRectVsRect = function(rect1, rect2) {
+        return !(rect1.x + rect1.width < rect2.x ||
+            rect1.x > rect2.x + rect2.width ||
+            rect1.y + rect1.height < rect2.y ||
+            rect1.y > rect2.y + rect2.height);
     };
 
     this.resolveCollision = function(solid1, solid2, normal) {
@@ -70,8 +88,8 @@ fuckin.Engine = function(options) {
 
         normal.multiply(j, true);
 
-        solid1.velocity.add(normal.multiply(solid1.inverseMass).invert(true), true);
-        solid2.velocity.add(normal.multiply(solid2.inverseMass), true);
+        solid1.addImpulse(normal.multiply(solid1.inverseMass).invert(true));
+        solid2.addImpulse(normal.multiply(solid2.inverseMass));
     };
 
     this.render = function() {
@@ -83,15 +101,41 @@ fuckin.Engine = function(options) {
         for (var i = this.solids.length - 1; i >= 0; i--) {
             var solid = this.solids[i];
 
-            if (this.debug) {
-                solid.debug(this.canvasContext);
+            if (solid.fill instanceof fuckin.Bitmap) {
+                // TODO
+            } else {
+                this.canvasContext.fillStyle = solid.fill;
+
+                if (solid instanceof fuckin.Rect) {
+                    this.canvasContext.fillRect(solid.x + .5, solid.y + .5, solid.width, solid.height);
+                }
             }
+        }
+
+        if (this.debug) {
+            for (var i = this.solids.length - 1; i >= 0; i--) {
+                this.drawDebug(this.solids[i]);
+            }
+        }
+    };
+
+    this.drawDebug = function(solid) {
+        var moving = solid.moving();
+        this.canvasContext.fillStyle = moving? 'rgba(255, 0, 0, .2)' : 'rgba(0, 255, 0, .2)';
+        this.canvasContext.strokeStyle = moving? 'rgba(255, 0, 0, .5)' : 'rgba(0, 255, 0, .5)';
+        this.canvasContext.lineWidth = 1;
+
+        if (solid instanceof fuckin.Rect) {
+            this.canvasContext.fillRect(solid.x + .5, solid.y + .5, solid.width, solid.height);
+            this.canvasContext.strokeRect(solid.x + .5, solid.y + .5, solid.width, solid.height);
         }
     };
 };
 
 fuckin.Engine.prototype.addRect = function(options) {
-    this.solids.push(new fuckin.Rect(this.normalizeSolidOptions(options)));
+    var rect = new fuckin.Rect(this.normalizeSolidOptions(options));
+    this.solids.push(rect);
+    return rect;
 };
 
 fuckin.Engine.prototype.start = function() {

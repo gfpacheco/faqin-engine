@@ -1,11 +1,24 @@
-<doctype html>
+<!doctype html>
 <html>
-    <head></head>
+    <head>
+        <style type="text/css">
+            #gameCanvas {
+                display: block;
+                margin: 0 auto;
+                background: #eee;
+            }
+        </style>
+    </head>
     <body>
-        <canvas id="gameCanvas" width="480" height="360" style="background: #eee;"></canvas>
-        <script type="text/javascript" src="fucking.js"></script>
-        <script type="text/javascript" src="engine.js"></script>
-        <script type="text/javascript" src="game.js"></script>
+        <canvas id="gameCanvas" width="240" height="400" style="background: #eee; margin: auto;"></canvas>
+        <script type="text/javascript" src="fuckin.js"></script>
+        <script type="text/javascript" src="fuckin.vector.js"></script>
+        <script type="text/javascript" src="fuckin.bitmap.js"></script>
+        <script type="text/javascript" src="fuckin.event-dispatcher.js"></script>
+        <script type="text/javascript" src="fuckin.solid.js"></script>
+        <script type="text/javascript" src="fuckin.rect.js"></script>
+        <script type="text/javascript" src="fuckin.engine.js"></script>
+        <script type="text/javascript" src="fuckin.game.js"></script>
         <script type="text/javascript">
             window.onload = function() {
                 new fuckin.Game(document.getElementById('gameCanvas'));

@@ -1,9 +1,9 @@
 fuckin.Engine = function(options) {
     this.fps = options.fps || 30;
-    this.defaultGravity = options.defaultGravity || 10 / this.fps;
+    this.defaultGravity = options.defaultGravity || 10;
     this.canvas = options.canvas;
     this.canvasContext = this.canvas.getContext('2d');
-    this.viewport = options.viewport || new fuckin.Rect({
+    this.viewport = options.viewport || new fuckin.Viewport({
         x: 0,
         y: 0,
         width: this.canvas.width,
@@ -15,6 +15,7 @@ fuckin.Engine = function(options) {
 
     this.normalizeSolidOptions = function(options) {
         options.gravity = (options.gravity === true)? this.defaultGravity : options.gravity;
+        options.gravity /= this.fps;
         return options;
     };
 
@@ -29,6 +30,7 @@ fuckin.Engine = function(options) {
             solid1 = this.solids[i];
 
             if (solid1.gravity) {
+                console.log(solid1.gravity);
                 solid1.velocity.y += solid1.gravity;
             }
 
@@ -41,7 +43,7 @@ fuckin.Engine = function(options) {
             for (j = i - 1; j >= 0; j--) {
                 solid2 = this.solids[j];
 
-                if (!solid1.moving() && !solid2.moving) {
+                if (!solid1.moving() && !solid2.moving()) {
                     continue;
                 }
 
@@ -52,6 +54,8 @@ fuckin.Engine = function(options) {
                 }
             }
         }
+
+        this.viewport.update();
     };
 
     this.handleCollision = function(solid1, solid2) {
@@ -70,10 +74,10 @@ fuckin.Engine = function(options) {
     };
 
     this.checkRectVsRect = function(rect1, rect2) {
-        return !(rect1.x + rect1.width < rect2.x ||
-            rect1.x > rect2.x + rect2.width ||
-            rect1.y + rect1.height < rect2.y ||
-            rect1.y > rect2.y + rect2.height);
+        return !(rect1.x + (rect1.width * 0.5) < rect2.x ||
+            rect1.x > rect2.x + (rect2.width * 0.5) ||
+            rect1.y + (rect1.height * 0.5) < rect2.y ||
+            rect1.y > rect2.y + (rect2.height * 0.5));
     };
 
     this.resolveCollision = function(solid1, solid2, normal) {
@@ -98,8 +102,12 @@ fuckin.Engine = function(options) {
         this.canvasContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.canvasContext.restore();
 
-        for (var i = this.solids.length - 1; i >= 0; i--) {
-            var solid = this.solids[i];
+        var scale = new fuckin.Vector(this.canvas.width / this.viewport.width, this.canvas.height / this.viewport.height),
+            solid,
+            i;
+
+        for (i = this.solids.length - 1; i >= 0; i--) {
+            solid = this.solids[i];
 
             if (solid.fill instanceof fuckin.Bitmap) {
                 // TODO
@@ -107,7 +115,11 @@ fuckin.Engine = function(options) {
                 this.canvasContext.fillStyle = solid.fill;
 
                 if (solid instanceof fuckin.Rect) {
-                    this.canvasContext.fillRect(solid.x + .5, solid.y + .5, solid.width, solid.height);
+                    this.canvasContext.fillRect(
+                        (solid.x - this.viewport.x) * scale.x + 0.5,
+                        (solid.y - this.viewport.y) * scale.y + 0.5,
+                        solid.width * scale.x,
+                        solid.height * scale.y);
                 }
             }
         }

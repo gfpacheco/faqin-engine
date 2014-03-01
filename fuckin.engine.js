@@ -1,6 +1,5 @@
 fuckin.Engine = function(options) {
     this.fps = options.fps || 30;
-    this.defaultGravity = options.defaultGravity || 10;
     this.canvas = options.canvas;
     this.canvasContext = this.canvas.getContext('2d');
     this.viewport = options.viewport || new fuckin.Viewport({
@@ -13,12 +12,6 @@ fuckin.Engine = function(options) {
 
     this.solids = [];
 
-    this.normalizeSolidOptions = function(options) {
-        options.gravity = (options.gravity === true)? this.defaultGravity : options.gravity;
-        options.gravity /= this.fps;
-        return options;
-    };
-
     this.simulate = function() {
         var solid1,
             solid2,
@@ -30,8 +23,7 @@ fuckin.Engine = function(options) {
             solid1 = this.solids[i];
 
             if (solid1.gravity) {
-                console.log(solid1.gravity);
-                solid1.velocity.y += solid1.gravity;
+                solid1.velocity.y += solid1.gravity / this.fps;
             }
 
             solid1.x += solid1.velocity.x;
@@ -142,12 +134,6 @@ fuckin.Engine = function(options) {
             this.canvasContext.strokeRect(solid.x + .5, solid.y + .5, solid.width, solid.height);
         }
     };
-};
-
-fuckin.Engine.prototype.addRect = function(options) {
-    var rect = new fuckin.Rect(this.normalizeSolidOptions(options));
-    this.solids.push(rect);
-    return rect;
 };
 
 fuckin.Engine.prototype.start = function() {

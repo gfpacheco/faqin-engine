@@ -1,5 +1,7 @@
 fuckin.Solid = function(options) {
     fuckin.EventDispatcher.call(this);
+    options = options || {};
+
     this.gravity = options.gravity;
     this.velocity = options.velocity || new fuckin.Vector();
     this.restitution = options.restitution || 1;

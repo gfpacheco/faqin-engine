@@ -1,1 +1,0 @@
-fuckin.Bitmap = function(options) {};

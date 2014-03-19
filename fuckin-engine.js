@@ -378,7 +378,6 @@ fuckin.Engine = (function() {
   };
 
   Engine.prototype.drawRect = function(x, y, width, height, fill, stroke, strokeWidth) {
-    console.log(fill);
     if (fill) {
       this.canvasContext.fillStyle = fill;
       this.canvasContext.fillRect(x, y, width, height);

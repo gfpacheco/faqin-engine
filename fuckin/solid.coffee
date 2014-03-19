@@ -1,5 +1,5 @@
 class fuckin.Solid extends fuckin.EventDispatcher
-  defaultOptions:
+  @defaultOptions:
     gravity: false
     velocity: new fuckin.Vector
     restitution: 1
@@ -7,7 +7,7 @@ class fuckin.Solid extends fuckin.EventDispatcher
     y: 0
 
   constructor: (options) ->
-    deepExtend this, @defaultOptions, options
+    deepExtend this, @constructor.defaultOptions, options
     super
     @mass ?= @calculateMass()
     @inverseMass = 1 / @mass

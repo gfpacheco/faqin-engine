@@ -1,10 +1,10 @@
 class fuckin.Engine
-  defaultOptions:
+  @defaultOptions:
     fps: 30
     solids: []
 
   constructor: (options) ->
-    deepExtend this, @defaultOptions, options
+    deepExtend this, @constructor.defaultOptions, options
 
     @viewport ?= new fuckin.Viewport
       x: 0,

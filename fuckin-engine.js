@@ -1,4 +1,4 @@
-var deepExtend, fuckin,
+var clone, deepExtend, fuckin,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -7,28 +7,57 @@ var deepExtend, fuckin,
 
 fuckin = {};
 
-deepExtend = (function(_this) {
-  return function() {
-    var extenders, key, object, other, val, _i, _len;
-    object = arguments[0], extenders = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-    if (object == null) {
-      return {};
-    }
-    for (_i = 0, _len = extenders.length; _i < _len; _i++) {
-      other = extenders[_i];
-      for (key in other) {
-        if (!__hasProp.call(other, key)) continue;
-        val = other[key];
-        if ((object[key] == null) || typeof val !== 'object') {
-          object[key] = val;
-        } else {
-          object[key] = deepExtend(object[key], val);
-        }
+deepExtend = function() {
+  var extenders, key, object, other, val, _i, _len;
+  object = arguments[0], extenders = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+  if (object == null) {
+    return {};
+  }
+  for (_i = 0, _len = extenders.length; _i < _len; _i++) {
+    other = extenders[_i];
+    for (key in other) {
+      if (!__hasProp.call(other, key)) continue;
+      val = other[key];
+      if ((object[key] == null) || typeof val !== 'object') {
+        object[key] = val;
+      } else {
+        object[key] = deepExtend(object[key], val);
       }
     }
-    return object;
-  };
-})(this);
+  }
+  return object;
+};
+
+clone = function(obj) {
+  var flags, key, newInstance;
+  if ((obj == null) || typeof obj !== 'object') {
+    return obj;
+  }
+  if (obj instanceof Date) {
+    return new Date(obj.getTime());
+  }
+  if (obj instanceof RegExp) {
+    flags = '';
+    if (obj.global != null) {
+      flags += 'g';
+    }
+    if (obj.ignoreCase != null) {
+      flags += 'i';
+    }
+    if (obj.multiline != null) {
+      flags += 'm';
+    }
+    if (obj.sticky != null) {
+      flags += 'y';
+    }
+    return new RegExp(obj.source, flags);
+  }
+  newInstance = new obj.constructor();
+  for (key in obj) {
+    newInstance[key] = clone(obj[key]);
+  }
+  return newInstance;
+};
 
 fuckin.EventDispatcher = (function() {
   function EventDispatcher() {
@@ -157,7 +186,7 @@ fuckin.Bitmap = (function() {
 fuckin.Solid = (function(_super) {
   __extends(Solid, _super);
 
-  Solid.prototype.defaultOptions = {
+  Solid.defaultOptions = {
     gravity: false,
     velocity: new fuckin.Vector,
     restitution: 1,
@@ -169,7 +198,7 @@ fuckin.Solid = (function(_super) {
     this.moving = __bind(this.moving, this);
     this.addImpulse = __bind(this.addImpulse, this);
     this.calculateMass = __bind(this.calculateMass, this);
-    deepExtend(this, this.defaultOptions, options);
+    deepExtend(this, this.constructor.defaultOptions, options);
     Solid.__super__.constructor.apply(this, arguments);
     if (this.mass == null) {
       this.mass = this.calculateMass();
@@ -197,14 +226,13 @@ fuckin.Solid = (function(_super) {
 fuckin.Rect = (function(_super) {
   __extends(Rect, _super);
 
-  Rect.prototype.defaultOptions = {
+  deepExtend(Rect.defaultOptions, Rect.defaultOptions, {
     width: 0,
     height: 0
-  };
+  });
 
   function Rect(options) {
     this.calculateMass = __bind(this.calculateMass, this);
-    deepExtend(this, this.defaultOptions, options);
     Rect.__super__.constructor.call(this, options);
   }
 
@@ -252,7 +280,7 @@ fuckin.Viewport = (function(_super) {
 })(fuckin.Rect);
 
 fuckin.Engine = (function() {
-  Engine.prototype.defaultOptions = {
+  Engine.defaultOptions = {
     fps: 30,
     solids: []
   };
@@ -268,7 +296,7 @@ fuckin.Engine = (function() {
     this.checkRectVsRect = __bind(this.checkRectVsRect, this);
     this.handleCollision = __bind(this.handleCollision, this);
     this.simulate = __bind(this.simulate, this);
-    deepExtend(this, this.defaultOptions, options);
+    deepExtend(this, this.constructor.defaultOptions, options);
     if (this.viewport == null) {
       this.viewport = new fuckin.Viewport({
         x: 0,

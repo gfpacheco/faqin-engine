@@ -198,7 +198,7 @@ fuckin.Solid = (function(_super) {
     this.moving = __bind(this.moving, this);
     this.addImpulse = __bind(this.addImpulse, this);
     this.calculateMass = __bind(this.calculateMass, this);
-    deepExtend(this, this.constructor.defaultOptions, options);
+    deepExtend(this, clone(this.constructor.defaultOptions), options);
     Solid.__super__.constructor.apply(this, arguments);
     if (this.mass == null) {
       this.mass = this.calculateMass();
@@ -289,14 +289,16 @@ fuckin.Engine = (function() {
     this.update = __bind(this.update, this);
     this.pause = __bind(this.pause, this);
     this.start = __bind(this.start, this);
+    this.drawText = __bind(this.drawText, this);
     this.drawRect = __bind(this.drawRect, this);
+    this.prepareContext = __bind(this.prepareContext, this);
     this.drawDebug = __bind(this.drawDebug, this);
     this.render = __bind(this.render, this);
     this.resolveCollision = __bind(this.resolveCollision, this);
     this.checkRectVsRect = __bind(this.checkRectVsRect, this);
     this.handleCollision = __bind(this.handleCollision, this);
     this.simulate = __bind(this.simulate, this);
-    deepExtend(this, this.constructor.defaultOptions, options);
+    deepExtend(this, clone(this.constructor.defaultOptions), options);
     if (this.viewport == null) {
       this.viewport = new fuckin.Viewport({
         x: 0,
@@ -309,20 +311,22 @@ fuckin.Engine = (function() {
   }
 
   Engine.prototype.simulate = function() {
-    var i, j, solid, solid2, _i, _j, _k, _len, _len1, _ref, _ref1, _ref2, _ref3;
+    var currentFrame, deltaTime, i, j, solid, solid2, _i, _j, _k, _len, _ref, _ref1, _ref2, _ref3;
+    currentFrame = Date.now();
+    deltaTime = (currentFrame - this.lastFrame) / 1000;
+    this.lastFrame = currentFrame;
     _ref = this.solids;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       solid = _ref[_i];
       if (solid.gravity) {
-        solid.velocity.y += solid.gravity / this.fps;
+        solid.velocity.y += solid.gravity * deltaTime;
       }
-      solid.x += solid.velocity.x;
-      solid.y += solid.velocity.y;
+      solid.x += solid.velocity.x * deltaTime;
+      solid.y += solid.velocity.y * deltaTime;
     }
-    _ref1 = this.solids;
-    for (i = _j = 0, _len1 = _ref1.length; _j < _len1; i = ++_j) {
-      solid = _ref1[i];
-      for (j = _k = _ref2 = i + 1, _ref3 = this.solids.length; _ref2 <= _ref3 ? _k <= _ref3 : _k >= _ref3; j = _ref2 <= _ref3 ? ++_k : --_k) {
+    for (i = _j = 0, _ref1 = this.solids.length - 2; 0 <= _ref1 ? _j <= _ref1 : _j >= _ref1; i = 0 <= _ref1 ? ++_j : --_j) {
+      solid = this.solids[i];
+      for (j = _k = _ref2 = i + 1, _ref3 = this.solids.length - 1; _ref2 <= _ref3 ? _k <= _ref3 : _k >= _ref3; j = _ref2 <= _ref3 ? ++_k : --_k) {
         solid2 = this.solids[j];
         if (solid.moving() || solid2.moving()) {
           this.handleCollision(solid, solid2);
@@ -348,7 +352,7 @@ fuckin.Engine = (function() {
   };
 
   Engine.prototype.checkRectVsRect = function(rect1, rect2) {
-    return !(rect1.x + (rect1.width * 0.5) < rect2.x || rect1.x > rect2.x + (rect2.width * 0.5) || rect1.y + (rect1.height * 0.5) < rect2.y || rect1.y > rect2.y + (rect2.height * 0.5));
+    return !(rect1.x + (rect1.width * 0.5) < rect2.x - (rect2.width * 0.5) || rect1.x - (rect1.width * 0.5) > rect2.x + (rect2.width * 0.5) || rect1.y + (rect1.height * 0.5) < rect2.y - (rect2.height * 0.5) || rect1.y - (rect1.height * 0.5) > rect2.y + (rect2.height * 0.5));
   };
 
   Engine.prototype.resolveCollision = function(solid1, solid2) {
@@ -366,7 +370,7 @@ fuckin.Engine = (function() {
   };
 
   Engine.prototype.render = function() {
-    var scale, solid, _i, _j, _len, _len1, _ref, _results;
+    var scale, solid, _i, _j, _len, _len1, _ref, _ref1, _results;
     this.canvasContext.save();
     this.canvasContext.setTransform(1, 0, 0, 1, 0, 0);
     this.canvasContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -379,45 +383,65 @@ fuckin.Engine = (function() {
 
       } else {
         if (solid instanceof fuckin.Rect) {
-          this.drawRect((solid.x - this.viewport.x) * scale.x + 0.5, (solid.y - this.viewport.y) * scale.y + 0.5, solid.width * scale.x, solid.height * scale.y, solid.fill);
+          this.drawRect((solid.x - (solid.width * 0.5) - this.viewport.x) * scale.x + 0.5, (solid.y - (solid.height * 0.5) - this.viewport.y) * scale.y + 0.5, solid.width * scale.x, solid.height * scale.y, solid.fill);
         }
       }
     }
     if (this.debug) {
+      _ref1 = this.solids;
       _results = [];
-      for (_j = 0, _len1 = solids.length; _j < _len1; _j++) {
-        solid = solids[_j];
-        _results.push(this.drawDebug(solid));
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        solid = _ref1[_j];
+        _results.push(this.drawDebug(solid, scale));
       }
       return _results;
     }
   };
 
-  Engine.prototype.drawDebug = function(solid) {
+  Engine.prototype.drawDebug = function(solid, scale) {
     var moving;
     moving = solid.moving();
     if (solid instanceof fuckin.Rect) {
-      return this.drawRect(solid.x + .5, solid.y + .5, solid.width, solid.height, typeof moving === "function" ? moving({
-        'rgba(255, 0, 0, .2)': 'rgba(0, 255, 0, .2)'
-      }, typeof moving === "function" ? moving({
-        'rgba(255, 0, 0, .5)': 'rgba(0, 255, 0, .5)'
-      }) : void 0) : void 0);
+      return this.drawRect((solid.x - (solid.width * 0.5) - this.viewport.x) * scale.x + 0.5, (solid.y - (solid.height * 0.5) - this.viewport.y) * scale.y + 0.5, solid.width * scale.x, solid.height * scale.y, moving ? 'rgba(255, 0, 0, .3)' : 'rgba(0, 255, 0, .3)', moving ? 'rgba(255, 0, 0, .7)' : 'rgba(0, 255, 0, .7)');
+    }
+  };
+
+  Engine.prototype.prepareContext = function(fill, stroke, strokeWidth) {
+    if (fill) {
+      this.canvasContext.fillStyle = fill;
+    }
+    if (stroke) {
+      this.canvasContext.strokeStyle = stroke;
+      return this.canvasContext.lineWidth = strokeWidth || 1;
     }
   };
 
   Engine.prototype.drawRect = function(x, y, width, height, fill, stroke, strokeWidth) {
+    this.prepareContext(fill, stroke, strokeWidth);
     if (fill) {
-      this.canvasContext.fillStyle = fill;
       this.canvasContext.fillRect(x, y, width, height);
     }
     if (stroke) {
-      this.canvasContext.strokeStyle = stroke;
-      this.canvasContext.lineWidth = strokeWidth || 1;
       return this.canvasContext.strokeRect(x, y, width, height);
     }
   };
 
+  Engine.prototype.drawText = function(text, x, y, font, fill, stroke, strokeWidth) {
+    this.prepareContext(fill, stroke, strokeWidth);
+    if (font) {
+      this.canvasContext.font = font;
+    }
+    x -= this.canvasContext.measureText(text).width;
+    if (fill) {
+      this.canvasContext.fillText(text, x, y);
+    }
+    if (stroke) {
+      return this.canvasContext.strokeText(text, x, y);
+    }
+  };
+
   Engine.prototype.start = function() {
+    this.lastFrame = Date.now();
     return this.updateInterval = setInterval((function(_this) {
       return function() {
         return _this.update();

@@ -4,7 +4,7 @@ class fuckin.Engine
     solids: []
 
   constructor: (options) ->
-    deepExtend this, @constructor.defaultOptions, options
+    deepExtend this, clone(@constructor.defaultOptions), options
 
     @viewport ?= new fuckin.Viewport
       x: 0,
@@ -15,13 +15,17 @@ class fuckin.Engine
     @canvasContext = @canvas.getContext('2d')
 
   simulate: =>
+    currentFrame = Date.now()
+    deltaTime = (currentFrame - @lastFrame) / 1000
+    @lastFrame = currentFrame
     for solid in @solids
-      solid.velocity.y += solid.gravity / @fps if solid.gravity
-      solid.x += solid.velocity.x
-      solid.y += solid.velocity.y
+      solid.velocity.y += solid.gravity * deltaTime if solid.gravity
+      solid.x += solid.velocity.x * deltaTime
+      solid.y += solid.velocity.y * deltaTime
 
-    for solid, i in @solids
-      for j in [i + 1..@solids.length]
+    for i in [0..@solids.length - 2]
+      solid = @solids[i]
+      for j in [i + 1..@solids.length - 1]
         solid2 = @solids[j]
         @handleCollision solid, solid2 if solid.moving() || solid2.moving()
 
@@ -37,10 +41,10 @@ class fuckin.Engine
             solid1: solid1
 
   checkRectVsRect: (rect1, rect2) =>
-    !(rect1.x + (rect1.width * 0.5) < rect2.x ||
-      rect1.x > rect2.x + (rect2.width * 0.5) ||
-      rect1.y + (rect1.height * 0.5) < rect2.y ||
-      rect1.y > rect2.y + (rect2.height * 0.5))
+    !(rect1.x + (rect1.width * 0.5) < rect2.x - (rect2.width * 0.5) ||
+      rect1.x - (rect1.width * 0.5) > rect2.x + (rect2.width * 0.5) ||
+      rect1.y + (rect1.height * 0.5) < rect2.y - (rect2.height * 0.5) ||
+      rect1.y - (rect1.height * 0.5) > rect2.y + (rect2.height * 0.5))
 
   resolveCollision: (solid1, solid2) =>
     # TODO actually calculate normal
@@ -71,36 +75,58 @@ class fuckin.Engine
         # TODO
       else
         if solid instanceof fuckin.Rect
-          @drawRect (solid.x - @viewport.x) * scale.x + 0.5,
-            (solid.y - @viewport.y) * scale.y + 0.5,
+          @drawRect (solid.x - (solid.width * 0.5) - @viewport.x) * scale.x + 0.5,
+            (solid.y - (solid.height * 0.5) - @viewport.y) * scale.y + 0.5,
             solid.width * scale.x,
             solid.height * scale.y,
             solid.fill
 
-    @drawDebug solid for solid in solids if @debug
+    @drawDebug solid, scale for solid in @solids if @debug
 
-  drawDebug: (solid) =>
+  drawDebug: (solid, scale) =>
     moving = solid.moving()
 
     if solid instanceof fuckin.Rect
-      @drawRect solid.x + .5,
-        solid.y + .5,
-        solid.width,
-        solid.height,
-        moving? 'rgba(255, 0, 0, .2)' : 'rgba(0, 255, 0, .2)',
-        moving? 'rgba(255, 0, 0, .5)' : 'rgba(0, 255, 0, .5)'
+      @drawRect (solid.x - (solid.width * 0.5) - @viewport.x) * scale.x + 0.5,
+        (solid.y - (solid.height * 0.5) - @viewport.y) * scale.y + 0.5,
+        solid.width * scale.x,
+        solid.height * scale.y,
+        if moving then 'rgba(255, 0, 0, .3)' else 'rgba(0, 255, 0, .3)',
+        if moving then 'rgba(255, 0, 0, .7)' else 'rgba(0, 255, 0, .7)'
 
-  drawRect: (x, y, width, height, fill, stroke, strokeWidth) =>
+  prepareContext: (fill, stroke, strokeWidth) =>
     if fill
       @canvasContext.fillStyle = fill
-      @canvasContext.fillRect x, y, width, height
 
     if stroke
       @canvasContext.strokeStyle = stroke
       @canvasContext.lineWidth = strokeWidth || 1
+
+  drawRect: (x, y, width, height, fill, stroke, strokeWidth) =>
+    @prepareContext fill, stroke, strokeWidth
+
+    if fill
+      @canvasContext.fillRect x, y, width, height
+
+    if stroke
       @canvasContext.strokeRect x, y, width, height
 
+  drawText: (text, x, y, font, fill, stroke, strokeWidth) =>
+    @prepareContext fill, stroke, strokeWidth
+
+    if font
+      @canvasContext.font = font
+
+    x -= @canvasContext.measureText(text).width
+
+    if fill
+      @canvasContext.fillText text, x, y
+
+    if stroke
+      @canvasContext.strokeText text, x, y
+
   start: =>
+    @lastFrame = Date.now()
     @updateInterval = setInterval =>
         @update()
       , 1000 / @fps

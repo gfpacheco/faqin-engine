@@ -7,7 +7,7 @@ class fuckin.Solid extends fuckin.EventDispatcher
     y: 0
 
   constructor: (options) ->
-    deepExtend this, @constructor.defaultOptions, options
+    deepExtend this, clone(@constructor.defaultOptions), options
     super
     @mass ?= @calculateMass()
     @inverseMass = 1 / @mass

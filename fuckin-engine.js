@@ -314,6 +314,7 @@ fuckin.Engine = (function() {
     var currentFrame, deltaTime, i, j, solid, solid2, _i, _j, _k, _len, _ref, _ref1, _ref2, _ref3;
     currentFrame = Date.now();
     deltaTime = (currentFrame - this.lastFrame) / 1000;
+    this.fps = 1 / deltaTime;
     this.lastFrame = currentFrame;
     _ref = this.solids;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -370,7 +371,7 @@ fuckin.Engine = (function() {
   };
 
   Engine.prototype.render = function() {
-    var scale, solid, _i, _j, _len, _len1, _ref, _ref1, _results;
+    var scale, solid, _i, _j, _len, _len1, _ref, _ref1;
     this.canvasContext.save();
     this.canvasContext.setTransform(1, 0, 0, 1, 0, 0);
     this.canvasContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -389,12 +390,11 @@ fuckin.Engine = (function() {
     }
     if (this.debug) {
       _ref1 = this.solids;
-      _results = [];
       for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
         solid = _ref1[_j];
-        _results.push(this.drawDebug(solid, scale));
+        this.drawDebug(solid, scale);
       }
-      return _results;
+      return this.drawText(Math.floor(this.fps), this.canvas.width / 2, 10, '10px Arial', '#000');
     }
   };
 
@@ -431,7 +431,7 @@ fuckin.Engine = (function() {
     if (font) {
       this.canvasContext.font = font;
     }
-    x -= this.canvasContext.measureText(text).width;
+    x -= this.canvasContext.measureText(text).width / 2;
     if (fill) {
       this.canvasContext.fillText(text, x, y);
     }

@@ -17,6 +17,7 @@ class fuckin.Engine
   simulate: =>
     currentFrame = Date.now()
     deltaTime = (currentFrame - @lastFrame) / 1000
+    @fps = 1 / deltaTime
     @lastFrame = currentFrame
     for solid in @solids
       solid.velocity.y += solid.gravity * deltaTime if solid.gravity
@@ -81,7 +82,9 @@ class fuckin.Engine
             solid.height * scale.y,
             solid.fill
 
-    @drawDebug solid, scale for solid in @solids if @debug
+    if @debug
+      @drawDebug solid, scale for solid in @solids
+      @drawText Math.floor(@fps), @canvas.width / 2, 10, '10px Arial', '#000'
 
   drawDebug: (solid, scale) =>
     moving = solid.moving()
@@ -117,7 +120,7 @@ class fuckin.Engine
     if font
       @canvasContext.font = font
 
-    x -= @canvasContext.measureText(text).width
+    x -= @canvasContext.measureText(text).width / 2
 
     if fill
       @canvasContext.fillText text, x, y

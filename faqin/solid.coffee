@@ -1,7 +1,7 @@
-class fuckin.Solid extends fuckin.EventDispatcher
+class faqin.Solid extends faqin.EventDispatcher
   @defaultOptions:
     gravity: false
-    velocity: new fuckin.Vector
+    velocity: new faqin.Vector
     restitution: 1
     x: 0
     y: 0

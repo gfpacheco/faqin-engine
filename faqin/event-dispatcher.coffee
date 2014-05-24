@@ -1,4 +1,4 @@
-class fuckin.EventDispatcher
+class faqin.EventDispatcher
   constructor: ->
     @registrations = {}
 

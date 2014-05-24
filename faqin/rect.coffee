@@ -1,4 +1,4 @@
-class fuckin.Rect extends fuckin.Solid
+class faqin.Rect extends faqin.Solid
   deepExtend @defaultOptions, @defaultOptions,
     width: 0
     height: 0

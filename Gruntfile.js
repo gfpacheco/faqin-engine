@@ -8,11 +8,11 @@ module.exports = function(grunt) {
 
     grunt.initConfig({
         watch: {
-            files: 'fuckin/**/*.coffee',
+            files: 'faqin/**/*.coffee',
             tasks: 'default'
         },
 
-        clean: ['fuckin-engine.js'],
+        clean: ['faqin-engine.js'],
 
         coffee: {
             options: {
@@ -23,17 +23,17 @@ module.exports = function(grunt) {
                 files: [
                     {
                         src: [
-                            'fuckin/fuckin.coffee',
-                            'fuckin/helpers.coffee',
-                            'fuckin/event-dispatcher.coffee',
-                            'fuckin/vector.coffee',
-                            'fuckin/bitmap.coffee',
-                            'fuckin/solid.coffee',
-                            'fuckin/rect.coffee',
-                            'fuckin/viewport.coffee',
-                            'fuckin/engine.coffee'
+                            'faqin/faqin.coffee',
+                            'faqin/helpers.coffee',
+                            'faqin/event-dispatcher.coffee',
+                            'faqin/vector.coffee',
+                            'faqin/bitmap.coffee',
+                            'faqin/solid.coffee',
+                            'faqin/rect.coffee',
+                            'faqin/viewport.coffee',
+                            'faqin/engine.coffee'
                         ],
-                        dest: 'fuckin-engine.js'
+                        dest: 'faqin-engine.js'
                     }
                 ]
             }

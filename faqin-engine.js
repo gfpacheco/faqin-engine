@@ -1,11 +1,11 @@
-var clone, deepExtend, fuckin,
+var clone, deepExtend, faqin,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-fuckin = {};
+faqin = {};
 
 deepExtend = function() {
   var extenders, key, object, other, val, _i, _len;
@@ -59,7 +59,7 @@ clone = function(obj) {
   return newInstance;
 };
 
-fuckin.EventDispatcher = (function() {
+faqin.EventDispatcher = (function() {
   function EventDispatcher() {
     this.dispatchEvent = __bind(this.dispatchEvent, this);
     this.removeEventListener = __bind(this.removeEventListener, this);
@@ -112,7 +112,7 @@ fuckin.EventDispatcher = (function() {
 
 })();
 
-fuckin.Vector = (function() {
+faqin.Vector = (function() {
   function Vector(x, y) {
     this.distance = __bind(this.distance, this);
     this.multiply = __bind(this.multiply, this);
@@ -134,7 +134,7 @@ fuckin.Vector = (function() {
       this.y += vector.y;
       return this;
     } else {
-      return new fuckin.Vector(this.x + vector.y, this.y + vector.y);
+      return new faqin.Vector(this.x + vector.y, this.y + vector.y);
     }
   };
 
@@ -144,7 +144,7 @@ fuckin.Vector = (function() {
       this.y -= vector.y;
       return this;
     } else {
-      return new fuckin.Vector(this.x - vector.y, this.y - vector.y);
+      return new faqin.Vector(this.x - vector.y, this.y - vector.y);
     }
   };
 
@@ -154,7 +154,7 @@ fuckin.Vector = (function() {
       this.y = -this.y;
       return this;
     } else {
-      return new fuckin.Vector(-this.x, -this.y);
+      return new faqin.Vector(-this.x, -this.y);
     }
   };
 
@@ -164,7 +164,7 @@ fuckin.Vector = (function() {
       this.y *= scalar;
       return this;
     } else {
-      return new fuckin.Vector(this.x * scalar, this.y * scalar);
+      return new faqin.Vector(this.x * scalar, this.y * scalar);
     }
   };
 
@@ -176,19 +176,19 @@ fuckin.Vector = (function() {
 
 })();
 
-fuckin.Bitmap = (function() {
+faqin.Bitmap = (function() {
   function Bitmap() {}
 
   return Bitmap;
 
 })();
 
-fuckin.Solid = (function(_super) {
+faqin.Solid = (function(_super) {
   __extends(Solid, _super);
 
   Solid.defaultOptions = {
     gravity: false,
-    velocity: new fuckin.Vector,
+    velocity: new faqin.Vector,
     restitution: 1,
     x: 0,
     y: 0
@@ -221,9 +221,9 @@ fuckin.Solid = (function(_super) {
 
   return Solid;
 
-})(fuckin.EventDispatcher);
+})(faqin.EventDispatcher);
 
-fuckin.Rect = (function(_super) {
+faqin.Rect = (function(_super) {
   __extends(Rect, _super);
 
   deepExtend(Rect.defaultOptions, Rect.defaultOptions, {
@@ -242,9 +242,9 @@ fuckin.Rect = (function(_super) {
 
   return Rect;
 
-})(fuckin.Solid);
+})(faqin.Solid);
 
-fuckin.Viewport = (function(_super) {
+faqin.Viewport = (function(_super) {
   __extends(Viewport, _super);
 
   function Viewport(options) {
@@ -277,9 +277,9 @@ fuckin.Viewport = (function(_super) {
 
   return Viewport;
 
-})(fuckin.Rect);
+})(faqin.Rect);
 
-fuckin.Engine = (function() {
+faqin.Engine = (function() {
   Engine.defaultOptions = {
     fps: 30,
     solids: []
@@ -300,7 +300,7 @@ fuckin.Engine = (function() {
     this.simulate = __bind(this.simulate, this);
     deepExtend(this, clone(this.constructor.defaultOptions), options);
     if (this.viewport == null) {
-      this.viewport = new fuckin.Viewport({
+      this.viewport = new faqin.Viewport({
         x: 0,
         y: 0,
         width: this.canvas.width,
@@ -338,8 +338,8 @@ fuckin.Engine = (function() {
   };
 
   Engine.prototype.handleCollision = function(solid1, solid2) {
-    if (solid1 instanceof fuckin.Rect) {
-      if (solid2 instanceof fuckin.Rect) {
+    if (solid1 instanceof faqin.Rect) {
+      if (solid2 instanceof faqin.Rect) {
         if (this.checkRectVsRect(solid1, solid2)) {
           solid1.dispatchEvent(new Event('collide', {
             solid1: solid2
@@ -358,7 +358,7 @@ fuckin.Engine = (function() {
 
   Engine.prototype.resolveCollision = function(solid1, solid2) {
     var e, j, normal, velocityAlongNormal;
-    normal = new fuckin.Vector(0, 1);
+    normal = new faqin.Vector(0, 1);
     velocityAlongNormal = solid2.velocity.sub(solid1.velocity).dot(normal);
     if (velocityAlongNormal > 0) {
       return;
@@ -376,14 +376,14 @@ fuckin.Engine = (function() {
     this.canvasContext.setTransform(1, 0, 0, 1, 0, 0);
     this.canvasContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.canvasContext.restore();
-    scale = new fuckin.Vector(this.canvas.width / this.viewport.width, this.canvas.height / this.viewport.height);
+    scale = new faqin.Vector(this.canvas.width / this.viewport.width, this.canvas.height / this.viewport.height);
     _ref = this.solids;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       solid = _ref[_i];
-      if (solid.fill instanceof fuckin.Bitmap) {
+      if (solid.fill instanceof faqin.Bitmap) {
 
       } else {
-        if (solid instanceof fuckin.Rect) {
+        if (solid instanceof faqin.Rect) {
           this.drawRect((solid.x - (solid.width * 0.5) - this.viewport.x) * scale.x + 0.5, (solid.y - (solid.height * 0.5) - this.viewport.y) * scale.y + 0.5, solid.width * scale.x, solid.height * scale.y, solid.fill);
         }
       }
@@ -401,7 +401,7 @@ fuckin.Engine = (function() {
   Engine.prototype.drawDebug = function(solid, scale) {
     var moving;
     moving = solid.moving();
-    if (solid instanceof fuckin.Rect) {
+    if (solid instanceof faqin.Rect) {
       return this.drawRect((solid.x - (solid.width * 0.5) - this.viewport.x) * scale.x + 0.5, (solid.y - (solid.height * 0.5) - this.viewport.y) * scale.y + 0.5, solid.width * scale.x, solid.height * scale.y, moving ? 'rgba(255, 0, 0, .3)' : 'rgba(0, 255, 0, .3)', moving ? 'rgba(255, 0, 0, .7)' : 'rgba(0, 255, 0, .7)');
     }
   };

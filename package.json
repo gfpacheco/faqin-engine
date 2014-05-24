@@ -1,8 +1,8 @@
 {
-  "name": "fuckin-engine",
+  "name": "faqin-engine",
   "version": "0.0.0",
   "description": "A JavaScript 2D game engine made to improve math and programming skills.",
-  "main": "fuckin-engine.js",
+  "main": "faqin-engine.js",
   "devDependencies": {
     "grunt": "^0.4.4",
     "grunt-contrib-clean": "^0.5.0",
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/gfpacheco/fuckin-engine"
+    "url": "git://github.com/gfpacheco/faqin-engine"
   },
   "keywords": [
     "javascript",
@@ -22,7 +22,7 @@
   "author": "Guilherme Pacheco",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/gfpacheco/fuckin-engine/issues"
+    "url": "https://github.com/gfpacheco/faqin-engine/issues"
   },
-  "homepage": "https://github.com/gfpacheco/fuckin-engine"
+  "homepage": "https://github.com/gfpacheco/faqin-engine"
 }

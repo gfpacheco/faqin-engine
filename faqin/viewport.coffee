@@ -1,4 +1,4 @@
-class fuckin.Viewport extends fuckin.Rect
+class faqin.Viewport extends faqin.Rect
   constructor: (options) ->
     deepExtend this, options
     super

@@ -1,4 +1,4 @@
-class fuckin.Engine
+class faqin.Engine
   @defaultOptions:
     fps: 30
     solids: []
@@ -6,7 +6,7 @@ class fuckin.Engine
   constructor: (options) ->
     deepExtend this, clone(@constructor.defaultOptions), options
 
-    @viewport ?= new fuckin.Viewport
+    @viewport ?= new faqin.Viewport
       x: 0,
       y: 0,
       width: @canvas.width,
@@ -33,8 +33,8 @@ class fuckin.Engine
     @viewport.update()
 
   handleCollision: (solid1, solid2) =>
-    if solid1 instanceof fuckin.Rect
-      if solid2 instanceof fuckin.Rect
+    if solid1 instanceof faqin.Rect
+      if solid2 instanceof faqin.Rect
         if @checkRectVsRect solid1, solid2
           solid1.dispatchEvent new Event 'collide',
             solid1: solid2
@@ -49,7 +49,7 @@ class fuckin.Engine
 
   resolveCollision: (solid1, solid2) =>
     # TODO actually calculate normal
-    normal = new fuckin.Vector 0, 1
+    normal = new faqin.Vector 0, 1
 
     velocityAlongNormal = solid2.velocity.sub(solid1.velocity).dot normal
     return if velocityAlongNormal > 0
@@ -69,13 +69,13 @@ class fuckin.Engine
     @canvasContext.restore()
 
     # TODO cache scale until viewport size changes
-    scale = new fuckin.Vector @canvas.width / @viewport.width, @canvas.height / @viewport.height
+    scale = new faqin.Vector @canvas.width / @viewport.width, @canvas.height / @viewport.height
 
     for solid in @solids
-      if solid.fill instanceof fuckin.Bitmap
+      if solid.fill instanceof faqin.Bitmap
         # TODO
       else
-        if solid instanceof fuckin.Rect
+        if solid instanceof faqin.Rect
           @drawRect (solid.x - (solid.width * 0.5) - @viewport.x) * scale.x + 0.5,
             (solid.y - (solid.height * 0.5) - @viewport.y) * scale.y + 0.5,
             solid.width * scale.x,
@@ -89,7 +89,7 @@ class fuckin.Engine
   drawDebug: (solid, scale) =>
     moving = solid.moving()
 
-    if solid instanceof fuckin.Rect
+    if solid instanceof faqin.Rect
       @drawRect (solid.x - (solid.width * 0.5) - @viewport.x) * scale.x + 0.5,
         (solid.y - (solid.height * 0.5) - @viewport.y) * scale.y + 0.5,
         solid.width * scale.x,

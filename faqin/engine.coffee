@@ -68,30 +68,39 @@ class faqin.Engine
     @canvasContext.clearRect 0, 0, @canvas.width, @canvas.height
     @canvasContext.restore()
 
-    # TODO cache scale until viewport size changes
     scale = new faqin.Vector @canvas.width / @viewport.width, @canvas.height / @viewport.height
+    zeroZero =
+      x: @viewport.x - (@viewport.width * 0.5)
+      y: @viewport.y - (@viewport.height * 0.5)
 
     for solid in @solids
       if solid.fill instanceof faqin.Bitmap
         # TODO
       else
         if solid instanceof faqin.Rect
-          @drawRect (solid.x - (solid.width * 0.5) - @viewport.x) * scale.x + 0.5,
-            (solid.y - (solid.height * 0.5) - @viewport.y) * scale.y + 0.5,
-            solid.width * scale.x,
-            solid.height * scale.y,
-            solid.fill
+          wasVisible = solid.visible
+          solid.visible = @checkRectVsRect @viewport, solid
+          if solid.visible
+            @drawRect (solid.x - (solid.width * 0.5) - zeroZero.x) * scale.x + 0.5,
+              (solid.y - (solid.height * 0.5) - zeroZero.y) * scale.y + 0.5,
+              solid.width * scale.x,
+              solid.height * scale.y,
+              solid.fill
+            solid.dispatchEvent new Event 'show' if not wasVisible
+            solid.dispatchEvent new Event 'render'
+          else
+            solid.dispatchEvent new Event 'hide' if wasVisible
 
     if @debug
-      @drawDebug solid, scale for solid in @solids
-      @drawText Math.floor(@fps), @canvas.width / 2, 10, '10px Arial', '#000'
+      @drawDebug solid, scale, zeroZero for solid in @solids when solid.visible
+      @drawText Math.floor(@fps) + ' FPS', @canvas.width / 2, 10, '10px Arial', '#000'
 
-  drawDebug: (solid, scale) =>
+  drawDebug: (solid, scale, zeroZero) =>
     moving = solid.moving()
 
     if solid instanceof faqin.Rect
-      @drawRect (solid.x - (solid.width * 0.5) - @viewport.x) * scale.x + 0.5,
-        (solid.y - (solid.height * 0.5) - @viewport.y) * scale.y + 0.5,
+      @drawRect (solid.x - (solid.width * 0.5) - zeroZero.x) * scale.x + 0.5,
+        (solid.y - (solid.height * 0.5) - zeroZero.y) * scale.y + 0.5,
         solid.width * scale.x,
         solid.height * scale.y,
         if moving then 'rgba(255, 0, 0, .3)' else 'rgba(0, 255, 0, .3)',

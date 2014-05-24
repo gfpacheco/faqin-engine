@@ -5,6 +5,7 @@ class faqin.Solid extends faqin.EventDispatcher
     restitution: 1
     x: 0
     y: 0
+    visible: false
 
   constructor: (options) ->
     deepExtend this, clone(@constructor.defaultOptions), options

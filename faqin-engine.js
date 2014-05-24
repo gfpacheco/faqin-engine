@@ -191,7 +191,8 @@ faqin.Solid = (function(_super) {
     velocity: new faqin.Vector,
     restitution: 1,
     x: 0,
-    y: 0
+    y: 0,
+    visible: false
   };
 
   function Solid(options) {
@@ -259,19 +260,19 @@ faqin.Viewport = (function(_super) {
     }
     if (this.type === 'margin') {
       if (this.anchor.x < this.x + this.margin.x) {
-        this.x = this.anchor.x - this.margin.x;
+        this.x = this.anchor.x - this.margin.x + (this.width * 0.5);
       } else if (this.anchor.x > this.x + this.width - this.margin.x) {
-        this.x = this.anchor.x + this.margin.x - this.width;
+        this.x = this.anchor.x + this.margin.x - (this.width * 0.5);
       }
       if (this.anchor.y < this.y + this.margin.y) {
-        return this.y = this.anchor.y - this.margin.y;
+        return this.y = this.anchor.y - this.margin.y + (this.height * 0.5);
       } else if (this.anchor.y > this.y + this.height - this.margin.y) {
-        return this.y = this.anchor.y + this.margin.y - this.height;
+        return this.y = this.anchor.y + this.margin.y - (this.height * 0.5);
       }
     } else if (this.type === 'xFixed') {
-      return this.x = this.anchor.x - this.xFixed;
+      return this.x = this.anchor.x - this.xFixed + (this.width * 0.5);
     } else if (this.type === 'yFixed') {
-      return this.y = this.anchor.y - this.yFixed;
+      return this.y = this.anchor.y - this.yFixed + (this.height * 0.5);
     }
   };
 
@@ -371,12 +372,16 @@ faqin.Engine = (function() {
   };
 
   Engine.prototype.render = function() {
-    var scale, solid, _i, _j, _len, _len1, _ref, _ref1;
+    var scale, solid, wasVisible, zeroZero, _i, _j, _len, _len1, _ref, _ref1;
     this.canvasContext.save();
     this.canvasContext.setTransform(1, 0, 0, 1, 0, 0);
     this.canvasContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.canvasContext.restore();
     scale = new faqin.Vector(this.canvas.width / this.viewport.width, this.canvas.height / this.viewport.height);
+    zeroZero = {
+      x: this.viewport.x - (this.viewport.width * 0.5),
+      y: this.viewport.y - (this.viewport.height * 0.5)
+    };
     _ref = this.solids;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       solid = _ref[_i];
@@ -384,7 +389,19 @@ faqin.Engine = (function() {
 
       } else {
         if (solid instanceof faqin.Rect) {
-          this.drawRect((solid.x - (solid.width * 0.5) - this.viewport.x) * scale.x + 0.5, (solid.y - (solid.height * 0.5) - this.viewport.y) * scale.y + 0.5, solid.width * scale.x, solid.height * scale.y, solid.fill);
+          wasVisible = solid.visible;
+          solid.visible = this.checkRectVsRect(this.viewport, solid);
+          if (solid.visible) {
+            this.drawRect((solid.x - (solid.width * 0.5) - zeroZero.x) * scale.x + 0.5, (solid.y - (solid.height * 0.5) - zeroZero.y) * scale.y + 0.5, solid.width * scale.x, solid.height * scale.y, solid.fill);
+            if (!wasVisible) {
+              solid.dispatchEvent(new Event('show'));
+            }
+            solid.dispatchEvent(new Event('render'));
+          } else {
+            if (wasVisible) {
+              solid.dispatchEvent(new Event('hide'));
+            }
+          }
         }
       }
     }
@@ -392,17 +409,19 @@ faqin.Engine = (function() {
       _ref1 = this.solids;
       for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
         solid = _ref1[_j];
-        this.drawDebug(solid, scale);
+        if (solid.visible) {
+          this.drawDebug(solid, scale, zeroZero);
+        }
       }
-      return this.drawText(Math.floor(this.fps), this.canvas.width / 2, 10, '10px Arial', '#000');
+      return this.drawText(Math.floor(this.fps) + ' FPS', this.canvas.width / 2, 10, '10px Arial', '#000');
     }
   };
 
-  Engine.prototype.drawDebug = function(solid, scale) {
+  Engine.prototype.drawDebug = function(solid, scale, zeroZero) {
     var moving;
     moving = solid.moving();
     if (solid instanceof faqin.Rect) {
-      return this.drawRect((solid.x - (solid.width * 0.5) - this.viewport.x) * scale.x + 0.5, (solid.y - (solid.height * 0.5) - this.viewport.y) * scale.y + 0.5, solid.width * scale.x, solid.height * scale.y, moving ? 'rgba(255, 0, 0, .3)' : 'rgba(0, 255, 0, .3)', moving ? 'rgba(255, 0, 0, .7)' : 'rgba(0, 255, 0, .7)');
+      return this.drawRect((solid.x - (solid.width * 0.5) - zeroZero.x) * scale.x + 0.5, (solid.y - (solid.height * 0.5) - zeroZero.y) * scale.y + 0.5, solid.width * scale.x, solid.height * scale.y, moving ? 'rgba(255, 0, 0, .3)' : 'rgba(0, 255, 0, .3)', moving ? 'rgba(255, 0, 0, .7)' : 'rgba(0, 255, 0, .7)');
     }
   };
 

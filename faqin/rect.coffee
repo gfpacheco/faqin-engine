@@ -5,6 +5,3 @@ class faqin.Rect extends faqin.Solid
 
   constructor: (options) ->
     super options
-
-  calculateMass: =>
-    @width * @height / 100

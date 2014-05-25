@@ -233,13 +233,8 @@ faqin.Rect = (function(_super) {
   });
 
   function Rect(options) {
-    this.calculateMass = __bind(this.calculateMass, this);
     Rect.__super__.constructor.call(this, options);
   }
-
-  Rect.prototype.calculateMass = function() {
-    return this.width * this.height / 100;
-  };
 
   return Rect;
 
@@ -295,9 +290,8 @@ faqin.Engine = (function() {
     this.prepareContext = __bind(this.prepareContext, this);
     this.drawDebug = __bind(this.drawDebug, this);
     this.render = __bind(this.render, this);
-    this.resolveCollision = __bind(this.resolveCollision, this);
     this.checkRectVsRect = __bind(this.checkRectVsRect, this);
-    this.handleCollision = __bind(this.handleCollision, this);
+    this.testCollision = __bind(this.testCollision, this);
     this.simulate = __bind(this.simulate, this);
     deepExtend(this, clone(this.constructor.defaultOptions), options);
     if (this.viewport == null) {
@@ -331,23 +325,24 @@ faqin.Engine = (function() {
       for (j = _k = _ref2 = i + 1, _ref3 = this.solids.length - 1; _ref2 <= _ref3 ? _k <= _ref3 : _k >= _ref3; j = _ref2 <= _ref3 ? ++_k : --_k) {
         solid2 = this.solids[j];
         if (solid.moving() || solid2.moving()) {
-          this.handleCollision(solid, solid2);
+          this.testCollision(solid, solid2);
         }
       }
     }
     return this.viewport.update();
   };
 
-  Engine.prototype.handleCollision = function(solid1, solid2) {
+  Engine.prototype.testCollision = function(solid1, solid2) {
+    var event;
     if (solid1 instanceof faqin.Rect) {
       if (solid2 instanceof faqin.Rect) {
         if (this.checkRectVsRect(solid1, solid2)) {
-          solid1.dispatchEvent(new Event('collide', {
-            solid1: solid2
-          }));
-          return solid2.dispatchEvent(new Event('collide', {
-            solid1: solid1
-          }));
+          event = new Event('collide');
+          event.solid = solid2;
+          solid1.dispatchEvent(event);
+          event = new Event('collide');
+          event.solid = solid1;
+          return solid2.dispatchEvent(event);
         }
       }
     }
@@ -355,20 +350,6 @@ faqin.Engine = (function() {
 
   Engine.prototype.checkRectVsRect = function(rect1, rect2) {
     return !(rect1.x + (rect1.width * 0.5) < rect2.x - (rect2.width * 0.5) || rect1.x - (rect1.width * 0.5) > rect2.x + (rect2.width * 0.5) || rect1.y + (rect1.height * 0.5) < rect2.y - (rect2.height * 0.5) || rect1.y - (rect1.height * 0.5) > rect2.y + (rect2.height * 0.5));
-  };
-
-  Engine.prototype.resolveCollision = function(solid1, solid2) {
-    var e, j, normal, velocityAlongNormal;
-    normal = new faqin.Vector(0, 1);
-    velocityAlongNormal = solid2.velocity.sub(solid1.velocity).dot(normal);
-    if (velocityAlongNormal > 0) {
-      return;
-    }
-    e = Math.min(solid1.restitution, solid2.restitution);
-    j = (-(1 + e) * velocityAlongNormal) / (solid11.inverseMass + solid2.inverseMass);
-    normal.multiply(j, true);
-    solid1.addImpulse(normal.multiply(solid1.inverseMass).invert(true));
-    return solid2.addImpulse(normal.multiply(solid2.inverseMass));
   };
 
   Engine.prototype.render = function() {
@@ -421,7 +402,7 @@ faqin.Engine = (function() {
     var moving;
     moving = solid.moving();
     if (solid instanceof faqin.Rect) {
-      return this.drawRect((solid.x - (solid.width * 0.5) - zeroZero.x) * scale.x + 0.5, (solid.y - (solid.height * 0.5) - zeroZero.y) * scale.y + 0.5, solid.width * scale.x, solid.height * scale.y, moving ? 'rgba(255, 0, 0, .3)' : 'rgba(0, 255, 0, .3)', moving ? 'rgba(255, 0, 0, .7)' : 'rgba(0, 255, 0, .7)');
+      return this.drawRect((solid.x - (solid.width * 0.5) - zeroZero.x) * scale.x + 0.5, (solid.y - (solid.height * 0.5) - zeroZero.y) * scale.y + 0.5, solid.width * scale.x, solid.height * scale.y, moving ? 'rgba(0, 255, 0, .3)' : 'rgba(255, 0, 0, .3)', moving ? 'rgba(0, 255, 0, .7)' : 'rgba(255, 0, 0, .7)');
     }
   };
 

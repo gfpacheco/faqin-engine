@@ -28,39 +28,27 @@ class faqin.Engine
       solid = @solids[i]
       for j in [i + 1..@solids.length - 1]
         solid2 = @solids[j]
-        @handleCollision solid, solid2 if solid.moving() || solid2.moving()
+        @testCollision solid, solid2 if solid.moving() || solid2.moving()
 
     @viewport.update()
 
-  handleCollision: (solid1, solid2) =>
+  testCollision: (solid1, solid2) =>
     if solid1 instanceof faqin.Rect
       if solid2 instanceof faqin.Rect
         if @checkRectVsRect solid1, solid2
-          solid1.dispatchEvent new Event 'collide',
-            solid1: solid2
-          solid2.dispatchEvent new Event 'collide',
-            solid1: solid1
+          event = new Event 'collide'
+          event.solid = solid2
+          solid1.dispatchEvent event
+
+          event = new Event 'collide'
+          event.solid = solid1
+          solid2.dispatchEvent event
 
   checkRectVsRect: (rect1, rect2) =>
     !(rect1.x + (rect1.width * 0.5) < rect2.x - (rect2.width * 0.5) ||
       rect1.x - (rect1.width * 0.5) > rect2.x + (rect2.width * 0.5) ||
       rect1.y + (rect1.height * 0.5) < rect2.y - (rect2.height * 0.5) ||
       rect1.y - (rect1.height * 0.5) > rect2.y + (rect2.height * 0.5))
-
-  resolveCollision: (solid1, solid2) =>
-    # TODO actually calculate normal
-    normal = new faqin.Vector 0, 1
-
-    velocityAlongNormal = solid2.velocity.sub(solid1.velocity).dot normal
-    return if velocityAlongNormal > 0
-
-    e = Math.min solid1.restitution, solid2.restitution
-    j = (-(1 + e) * velocityAlongNormal) / (solid11.inverseMass + solid2.inverseMass)
-
-    normal.multiply j, true
-
-    solid1.addImpulse normal.multiply(solid1.inverseMass).invert true
-    solid2.addImpulse normal.multiply(solid2.inverseMass)
 
   render: =>
     @canvasContext.save()
@@ -103,8 +91,8 @@ class faqin.Engine
         (solid.y - (solid.height * 0.5) - zeroZero.y) * scale.y + 0.5,
         solid.width * scale.x,
         solid.height * scale.y,
-        if moving then 'rgba(255, 0, 0, .3)' else 'rgba(0, 255, 0, .3)',
-        if moving then 'rgba(255, 0, 0, .7)' else 'rgba(0, 255, 0, .7)'
+        if moving then 'rgba(0, 255, 0, .3)' else 'rgba(255, 0, 0, .3)',
+        if moving then 'rgba(0, 255, 0, .7)' else 'rgba(255, 0, 0, .7)'
 
   prepareContext: (fill, stroke, strokeWidth) =>
     if fill
